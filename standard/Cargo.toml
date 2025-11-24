@@ -1,0 +1,27 @@
+[package]
+name = "win-theme-toggle"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+windows-sys = { version = "0.59", features = [
+  # "Win32_Foundation",
+  "Win32_System_Registry",
+  "Win32_UI_WindowsAndMessaging"
+] }
+
+[profile.release]
+opt-level = "z"           # 最小体积优化
+lto = true               # 链接时优化
+codegen-units = 1        # 单代码生成单元
+panic = "abort"          # 直接终止而不是展开
+strip = true             # 移除符号表
+debug = false
+overflow-checks = false
+
+# 针对依赖包也进行优化
+[profile.release.package.windows-sys]
+opt-level = "z"
+
+[profile.release.package."*"]
+opt-level = "z"

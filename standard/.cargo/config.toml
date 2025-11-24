@@ -1,0 +1,10 @@
+[build]
+# 避免增量链接
+incremental = false
+
+[target.x86_64-pc-windows-msvc]
+rustflags = [
+  "-C", "link-arg=/OPT:REF",      # 移除未引用数据
+  "-C", "link-arg=/OPT:ICF",      # 合并相同函数
+  "-C", "link-arg=/INCREMENTAL:NO",
+]
