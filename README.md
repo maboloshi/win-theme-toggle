@@ -88,7 +88,7 @@ win-theme-toggle-mini.exe
 
 #### 标准版编译
 ```bash
-git clone <repository>
+git clone https://github.com/maboloshi/win-theme-toggle.git
 cd win-theme-toggle/standard
 cargo build --release
 # 输出: target/release/win-theme-toggle.exe (~100KB)
