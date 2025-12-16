@@ -94,9 +94,10 @@ unsafe fn broadcast(msg: u32, lparam: isize) {
 unsafe fn refresh_theme() {
     let theme_str = to_utf16("ImmersiveColorSet");
     broadcast(WM_SETTINGCHANGE, theme_str.as_ptr() as isize);
-    broadcast(WM_THEMECHANGED, 0);
-    broadcast(WM_SYSCOLORCHANGE, 0);
-    // broadcast(WM_SETTINGCHANGE);
+    
+    // 目前实测发现 WM_THEMECHANGED 和 WM_SYSCOLORCHANGE 的广播非必须，暂时注释掉（调试用）
+    // broadcast(WM_THEMECHANGED, 0);
+    // broadcast(WM_SYSCOLORCHANGE, 0);
 }
 
 fn main() {
