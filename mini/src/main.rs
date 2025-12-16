@@ -160,24 +160,26 @@ pub extern "system" fn mainCRTStartup() -> ! {
             200,
             ptr::null_mut(),
         );
-        winapi::SendMessageTimeoutW(
-            winapi::HWND_BROADCAST,
-            winapi::WM_THEMECHANGED,
-            0,
-            0,
-            winapi::SMTO_ABORTIFHUNG,
-            200,
-            ptr::null_mut(),
-        );
-        winapi::SendMessageTimeoutW(
-            winapi::HWND_BROADCAST,
-            winapi::WM_SYSCOLORCHANGE,
-            0,
-            0,
-            winapi::SMTO_ABORTIFHUNG,
-            200,
-            ptr::null_mut(),
-        );
+        
+        // 目前实测发现 WM_THEMECHANGED 和 WM_SYSCOLORCHANGE 的广播非必须，暂时注释掉（调试用）
+        // winapi::SendMessageTimeoutW(
+        //     winapi::HWND_BROADCAST,
+        //     winapi::WM_THEMECHANGED,
+        //     0,
+        //     0,
+        //     winapi::SMTO_ABORTIFHUNG,
+        //     200,
+        //     ptr::null_mut(),
+        // );
+        // winapi::SendMessageTimeoutW(
+        //     winapi::HWND_BROADCAST,
+        //     winapi::WM_SYSCOLORCHANGE,
+        //     0,
+        //     0,
+        //     winapi::SMTO_ABORTIFHUNG,
+        //     200,
+        //     ptr::null_mut(),
+        // );
 
         winapi::ExitProcess(0);
     }
