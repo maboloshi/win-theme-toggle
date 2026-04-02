@@ -106,10 +106,6 @@ fn main() {
         write_reg_dword(HKEY_CURRENT_USER, PATH, "AppsUseLightTheme", new_value);
         write_reg_dword(HKEY_CURRENT_USER, PATH, "SystemUsesLightTheme", new_value);
 
-        // 递增 ImmersiveColorSet 计数值，触发 WinUI 3 应用（如任务管理器）的颜色刷新事件
-        let color_set = read_reg_dword(HKEY_CURRENT_USER, PATH, "ImmersiveColorSet").unwrap_or(0);
-        write_reg_dword(HKEY_CURRENT_USER, PATH, "ImmersiveColorSet", color_set.wrapping_add(1));
-
         refresh_theme();
     }
 }

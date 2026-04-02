@@ -136,12 +136,14 @@ extern "system" { /* ... */ }
 - `AppsUseLightTheme` - 控制应用主题
 - `SystemUsesLightTheme` - 控制系统主题
 
-修改注册表后，还会递增 `ImmersiveColorSet` 计数值，以触发 WinUI 3 应用（如 Windows 11 任务管理器）的颜色刷新事件，然后广播以下消息通知所有应用主题变更：
-- `WM_SETTINGCHANGE`（lParam 为 `"ImmersiveColorSet"`）
+修改注册表后，广播以下消息通知所有应用主题变更：
+- `WM_SETTINGCHANGE`（lParam 为字符串 `"ImmersiveColorSet"`）
 - `WM_THEMECHANGED`
 - `WM_SYSCOLORCHANGE`
 
-**说明**：Windows 11 的任务管理器是 WinUI 3（现代打包）应用，它通过 `UISettings.ColorValuesChanged` 事件感知主题变化。该事件的底层触发机制是 `ImmersiveColorSet` 注册表计数值的实际变化，而非仅靠 `WM_SETTINGCHANGE` 消息。因此，本工具在切换主题时同步递增该计数值，并补充广播 `WM_THEMECHANGED` 和 `WM_SYSCOLORCHANGE`，确保任务管理器等现代应用能完整切换主题。
+**说明**：`"ImmersiveColorSet"` 是 `WM_SETTINGCHANGE` 的 **lParam 通知标识字符串**（类似 `"Environment"` 表示环境变量变更），与注册表路径无关，`Personalize` 键下**默认不存在**同名注册表值。  
+该字符串是 Windows 系统本身在切换主题时广播的标准通知，WinUI 3 应用（如 Windows 11 任务管理器）通过监听此 `WM_SETTINGCHANGE` 消息来感知主题变化，并结合读取 `AppsUseLightTheme`/`SystemUsesLightTheme` 注册表值来确定新主题。  
+技术出处：[microsoft/terminal `WindowEmperor.cpp`](https://github.com/microsoft/terminal/blob/c334f91f80dfe4c882e60be466622a7a51ca5bb9/src/cascadia/WindowsTerminal/WindowEmperor.cpp#L1008)、[AutoDarkMode `DwmRefreshHandler.cs`](https://github.com/AutoDarkMode/Windows-Auto-Night-Mode/blob/59e24dc2fe65f220e112f862fd6efc6d02740555/AutoDarkModeSvc/Handlers/DwmRefreshHandler.cs)。
 
 ## 系统要求
 
