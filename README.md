@@ -136,12 +136,12 @@ extern "system" { /* ... */ }
 - `AppsUseLightTheme` - 控制应用主题
 - `SystemUsesLightTheme` - 控制系统主题
 
-然后发送系统广播消息通知主题变更：
-- `WM_SETTINGCHANGE`
-- `WM_THEMECHANGED` (注：目前在代码中已临时注释)
-- `WM_SYSCOLORCHANGE` (注：目前在代码中已临时注释)
+修改注册表后，还会递增 `ImmersiveColorSet` 计数值，以触发 WinUI 3 应用（如 Windows 11 任务管理器）的颜色刷新事件，然后广播以下消息通知所有应用主题变更：
+- `WM_SETTINGCHANGE`（lParam 为 `"ImmersiveColorSet"`）
+- `WM_THEMECHANGED`
+- `WM_SYSCOLORCHANGE`
 
-**说明**：目前实测发现 `WM_THEMECHANGED` 与 `WM_SYSCOLORCHANGE` 的广播在本工具场景下非必须。为了便于排查并避免潜在副作用，这两处广播已在 standard 与 mini 两处分别临时注释（保留为注释以便将来恢复）。`WM_SETTINGCHANGE` 广播仍保留，用于通知主题字符串变化。若需要恢复，请在对应文件中移除注释（变更提交：暂时注释 WM_THEMECHANGED 与 WM_SYSCOLORCHANGE 广播，PR 已合并）。
+**说明**：Windows 11 的任务管理器是 WinUI 3（现代打包）应用，它通过 `UISettings.ColorValuesChanged` 事件感知主题变化。该事件的底层触发机制是 `ImmersiveColorSet` 注册表计数值的实际变化，而非仅靠 `WM_SETTINGCHANGE` 消息。因此，本工具在切换主题时同步递增该计数值，并补充广播 `WM_THEMECHANGED` 和 `WM_SYSCOLORCHANGE`，确保任务管理器等现代应用能完整切换主题。
 
 ## 系统要求
 

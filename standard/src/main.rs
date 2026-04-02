@@ -94,20 +94,21 @@ unsafe fn broadcast(msg: u32, lparam: isize) {
 unsafe fn refresh_theme() {
     let theme_str = to_utf16("ImmersiveColorSet");
     broadcast(WM_SETTINGCHANGE, theme_str.as_ptr() as isize);
-    
-    // 目前实测发现 WM_THEMECHANGED 和 WM_SYSCOLORCHANGE 的广播非必须，暂时注释掉（调试用）
-    // broadcast(WM_THEMECHANGED, 0);
-    // broadcast(WM_SYSCOLORCHANGE, 0);
+    broadcast(WM_THEMECHANGED, 0);
+    broadcast(WM_SYSCOLORCHANGE, 0);
 }
 
 fn main() {
     unsafe {
         let current = read_reg_dword(HKEY_CURRENT_USER, PATH, "AppsUseLightTheme").unwrap_or(1);
-        // let new_value = if current == 0 { 1 } else { 0 };
         let new_value = 1 - current; // 更简洁的切换逻辑
 
         write_reg_dword(HKEY_CURRENT_USER, PATH, "AppsUseLightTheme", new_value);
         write_reg_dword(HKEY_CURRENT_USER, PATH, "SystemUsesLightTheme", new_value);
+
+        // 递增 ImmersiveColorSet 计数值，触发 WinUI 3 应用（如任务管理器）的颜色刷新事件
+        let color_set = read_reg_dword(HKEY_CURRENT_USER, PATH, "ImmersiveColorSet").unwrap_or(0);
+        write_reg_dword(HKEY_CURRENT_USER, PATH, "ImmersiveColorSet", color_set.wrapping_add(1));
 
         refresh_theme();
     }

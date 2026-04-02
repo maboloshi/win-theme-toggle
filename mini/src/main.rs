@@ -150,6 +150,47 @@ pub extern "system" fn mainCRTStartup() -> ! {
             winapi::RegCloseKey(hkey);
         }
 
+        // 递增 ImmersiveColorSet 计数值，触发 WinUI 3 应用（如任务管理器）的颜色刷新事件
+        let mut color_set: u32 = 0;
+        let mut cs_size = 4;
+        if winapi::RegOpenKeyExW(
+            winapi::HKEY_CURRENT_USER,
+            path_buf.as_ptr(),
+            0,
+            winapi::KEY_READ,
+            &mut hkey,
+        ) == 0
+        {
+            winapi::RegQueryValueExW(
+                hkey,
+                immersive_buf.as_ptr(),
+                ptr::null_mut(),
+                ptr::null_mut(),
+                &mut color_set as *mut _ as *mut u8,
+                &mut cs_size,
+            );
+            winapi::RegCloseKey(hkey);
+        }
+        let new_color_set = color_set.wrapping_add(1);
+        if winapi::RegOpenKeyExW(
+            winapi::HKEY_CURRENT_USER,
+            path_buf.as_ptr(),
+            0,
+            winapi::KEY_WRITE,
+            &mut hkey,
+        ) == 0
+        {
+            winapi::RegSetValueExW(
+                hkey,
+                immersive_buf.as_ptr(),
+                0,
+                winapi::REG_DWORD,
+                &new_color_set as *const _ as *const u8,
+                4,
+            );
+            winapi::RegCloseKey(hkey);
+        }
+
         // 广播更改
         winapi::SendMessageTimeoutW(
             winapi::HWND_BROADCAST,
@@ -160,26 +201,24 @@ pub extern "system" fn mainCRTStartup() -> ! {
             200,
             ptr::null_mut(),
         );
-        
-        // 目前实测发现 WM_THEMECHANGED 和 WM_SYSCOLORCHANGE 的广播非必须，暂时注释掉（调试用）
-        // winapi::SendMessageTimeoutW(
-        //     winapi::HWND_BROADCAST,
-        //     winapi::WM_THEMECHANGED,
-        //     0,
-        //     0,
-        //     winapi::SMTO_ABORTIFHUNG,
-        //     200,
-        //     ptr::null_mut(),
-        // );
-        // winapi::SendMessageTimeoutW(
-        //     winapi::HWND_BROADCAST,
-        //     winapi::WM_SYSCOLORCHANGE,
-        //     0,
-        //     0,
-        //     winapi::SMTO_ABORTIFHUNG,
-        //     200,
-        //     ptr::null_mut(),
-        // );
+        winapi::SendMessageTimeoutW(
+            winapi::HWND_BROADCAST,
+            winapi::WM_THEMECHANGED,
+            0,
+            0,
+            winapi::SMTO_ABORTIFHUNG,
+            200,
+            ptr::null_mut(),
+        );
+        winapi::SendMessageTimeoutW(
+            winapi::HWND_BROADCAST,
+            winapi::WM_SYSCOLORCHANGE,
+            0,
+            0,
+            winapi::SMTO_ABORTIFHUNG,
+            200,
+            ptr::null_mut(),
+        );
 
         winapi::ExitProcess(0);
     }
